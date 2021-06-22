@@ -1,11 +1,3 @@
-// The backend should include the following routes:
-
-// GET /authors => returns the list of authors
-// GET /authors/123 => returns a single author
-// POST /authors => create a new author
-// PUT /authors/123 => edit the author with the given id
-// DELETE /authors/123 => delete the author with the given id
-
 import express from "express"
 import fs from "fs"
 import { fileURLToPath } from "url"
@@ -35,7 +27,7 @@ authorsRouter.get("/:id", (req, res) => {
     res.send(author)
 })
 
-// POST /authors => create a new author ===================================
+// POST /authors => creates a new author ===================================
 authorsRouter.post("/", (req, res) => {
     const objModel = {
         name: "",
@@ -56,7 +48,7 @@ authorsRouter.post("/", (req, res) => {
 
 })
 
-// PUT /authors/123 => edit the author with the given id ==================
+// PUT /authors/123 => edits the author with the given id ==================
 authorsRouter.put("/:id", (req, res) => {
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
 
@@ -84,7 +76,7 @@ authorsRouter.put("/:id", (req, res) => {
     res.send(modifiedAuthor)
 })
 
-// DELETE /authors/123 => delete the author with the given id =============
+// DELETE /authors/123 => deletes the author with the given id =============
 authorsRouter.delete("/:id", (req, res) => {
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
     const remainingAuthors = authors.filter(auth => auth._id !== req.params.id)
