@@ -10,14 +10,17 @@ import express from "express"
 import fs from "fs"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
+import uniqid from "uniqid"
 
 
 const authorsRouter = express.Router()
 
+const currentFilePath = fileURLToPath(import.meta.url)
+const currentFolderPath = dirname(currentFilePath)
+const authorsJSONPath = join(currentFolderPath, "authors.json")
+
 authorsRouter.get("/", (req, res) => {
-    const currentFilePath = fileURLToPath(import.meta.url)
-    const currentFolderPath = dirname(currentFilePath)
-    const authorsJSONPath = join(currentFolderPath, "authors.json")
+
     const authorsJSONContent = fs.readFileSync(authorsJSONPath)
     // console.log(JSON.parse(authorsJSONContent))
 
@@ -25,11 +28,22 @@ authorsRouter.get("/", (req, res) => {
 })
 
 authorsRouter.get("/:id", (req, res) => {
-    res.send("you got to the single author GET endpoint")
+    
 })
+
 authorsRouter.post("/", (req, res) => {
-    res.send("you got to the authors POST endpoint")
+    const newAuthor = {...req.body, _id: uniqid(), createAt: new Date()}
+
+    const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
+
+    authors.push(newAuthor)
+
+    fs.writeFileSync(authorsJSONPath,JSON.stringify(authors))
+
+    res.status(201).send({_id: newAuthor._id})
+
 })
+
 authorsRouter.put("/:id", (req, res) => {
     res.send("you got to the authors PUT endpoint")
 })
