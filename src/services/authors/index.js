@@ -28,7 +28,10 @@ authorsRouter.get("/", (req, res) => {
 })
 
 authorsRouter.get("/:id", (req, res) => {
-    
+    const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
+    const author = authors.find(auth => auth._id === req.params.id)
+
+    res.send(author)
 })
 
 authorsRouter.post("/", (req, res) => {
