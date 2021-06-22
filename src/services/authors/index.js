@@ -44,7 +44,7 @@ authorsRouter.post("/", (req, res) => {
         dateOfBirth: "",
     }
     const newAvatar = `https://ui-avatars.com/api/?name=${req.body.name}+${req.body.surname}`
-    const newAuthor = {...objModel, ...req.body, _id: uniqid(), avatar:newAvatar, createAt: new Date()}
+    const newAuthor = {...objModel, ...req.body, _id: uniqid(), avatar:newAvatar, createdAt: new Date()}
 
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
 
