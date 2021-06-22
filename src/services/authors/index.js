@@ -23,7 +23,6 @@ const authorsJSONPath = join(currentFolderPath, "authors.json")
 authorsRouter.get("/", (req, res) => {
 
     const authorsJSONContent = fs.readFileSync(authorsJSONPath)
-    // console.log(JSON.parse(authorsJSONContent))
 
     res.send(JSON.parse(authorsJSONContent))
 })
@@ -38,8 +37,14 @@ authorsRouter.get("/:id", (req, res) => {
 
 // POST /authors => create a new author ===================================
 authorsRouter.post("/", (req, res) => {
+    const objModel = {
+        name: "",
+        surname: "",
+        email: "",
+        dateOfBirth: "",
+    }
     const newAvatar = `https://ui-avatars.com/api/?name=${req.body.name}+${req.body.surname}`
-    const newAuthor = {...req.body, _id: uniqid(), avatar:newAvatar, createAt: new Date()}
+    const newAuthor = {...objModel, ...req.body, _id: uniqid(), avatar:newAvatar, createAt: new Date()}
 
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
 
@@ -71,8 +76,6 @@ authorsRouter.put("/:id", (req, res) => {
                 ? `https://ui-avatars.com/api/?name=${author.name}+${req.body.surname}`
                 : `https://ui-avatars.com/api/?name=${author.name}+${author.surname}`
     }
-    console.log("body: ", req.body)
-    console.log("params: ", req.params)
 
     remainingAuthors.push(modifiedAuthor)
 
