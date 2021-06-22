@@ -55,9 +55,24 @@ authorsRouter.post("/", (req, res) => {
 authorsRouter.put("/:id", (req, res) => {
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
 
+    const author = authors.find(auth => auth._id === req.params.id)
+
     const remainingAuthors = authors.filter(auth => auth._id !== req.params.id)
 
-    const modifiedAuthor = {...req.body, _id: req.params.id}
+    const modifiedAuthor = {
+        ...author,
+        ...req.body,
+        _id: req.params.id, 
+        avatar: (req.body.name && req.body.surname) 
+        ? `https://ui-avatars.com/api/?name=${req.body.name}+${req.body.surname}` 
+        :  req.body.name 
+            ? `https://ui-avatars.com/api/?name=${req.body.name}+${author.surname}`
+            : req.body.surname
+                ? `https://ui-avatars.com/api/?name=${author.name}+${req.body.surname}`
+                : `https://ui-avatars.com/api/?name=${author.name}+${author.surname}`
+    }
+    console.log("body: ", req.body)
+    console.log("params: ", req.params)
 
     remainingAuthors.push(modifiedAuthor)
 
