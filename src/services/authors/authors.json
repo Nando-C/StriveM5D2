@@ -1,0 +1,21 @@
+[
+    {
+        "name": "Fulanito",
+        "surname": "Detal",
+        "id": "1",
+        "email":"fulanito.detal@email.com",
+        "dateOfBirth": "24-12-2021",
+        "avatar": "https://ui-avatars.com/api/?name=Fulanito+Detal"
+
+    },
+    {
+        "name": "Maria",
+        "surname": "Roa",
+        "id": "2",
+        "email":"maria.roa@email.com",
+        "dateOfBirth": "10-01-2021",
+        "avatar": "https://ui-avatars.com/api/?name=Maria+Roa"
+
+    }
+    
+]

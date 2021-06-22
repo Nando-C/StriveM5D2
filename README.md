@@ -9,8 +9,6 @@ In this first "step" the application should enable the creation, editing, deleti
 
 Authors should have following information:
 
-
-
 name
 surname
 ID (Unique and server generated)
@@ -20,8 +18,6 @@ avatar (e.g. https://ui-avatars.com/api/?name=John+Doe)
 
 
 The backend should include the following routes:
-
-
 
 GET /authors => returns the list of authors
 GET /authors/123 => returns a single author
