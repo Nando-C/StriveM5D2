@@ -19,6 +19,7 @@ const currentFilePath = fileURLToPath(import.meta.url)
 const currentFolderPath = dirname(currentFilePath)
 const authorsJSONPath = join(currentFolderPath, "authors.json")
 
+// GET /authors => returns the list of authors ============================
 authorsRouter.get("/", (req, res) => {
 
     const authorsJSONContent = fs.readFileSync(authorsJSONPath)
@@ -27,6 +28,7 @@ authorsRouter.get("/", (req, res) => {
     res.send(JSON.parse(authorsJSONContent))
 })
 
+// GET /authors/123 => returns a single author ============================
 authorsRouter.get("/:id", (req, res) => {
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
     const author = authors.find(auth => auth._id === req.params.id)
@@ -34,6 +36,7 @@ authorsRouter.get("/:id", (req, res) => {
     res.send(author)
 })
 
+// POST /authors => create a new author ===================================
 authorsRouter.post("/", (req, res) => {
     const newAuthor = {...req.body, _id: uniqid(), createAt: new Date()}
 
@@ -47,9 +50,22 @@ authorsRouter.post("/", (req, res) => {
 
 })
 
+// PUT /authors/123 => edit the author with the given id ==================
 authorsRouter.put("/:id", (req, res) => {
-    res.send("you got to the authors PUT endpoint")
+    const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
+
+    const remainingAuthors = authors.filter(auth => auth._id !== req.params.id)
+
+    const modifiedAuthor = {...req.body, _id: req.params.id}
+
+    remainingAuthors.push(modifiedAuthor)
+
+    fs.writeFileSync(authorsJSONPath, JSON.stringify(remainingAuthors))
+
+    res.send(modifiedAuthor)
 })
+
+// DELETE /authors/123 => delete the author with the given id =============
 authorsRouter.delete("/:id", (req, res) => {
     res.send("you got to the authors DELETE endpoint")
 })
