@@ -38,7 +38,8 @@ authorsRouter.get("/:id", (req, res) => {
 
 // POST /authors => create a new author ===================================
 authorsRouter.post("/", (req, res) => {
-    const newAuthor = {...req.body, _id: uniqid(), createAt: new Date()}
+    const newAvatar = `https://ui-avatars.com/api/?name=${req.body.name}+${req.body.surname}`
+    const newAuthor = {...req.body, _id: uniqid(), avatar:newAvatar, createAt: new Date()}
 
     const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
 
