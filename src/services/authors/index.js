@@ -67,7 +67,13 @@ authorsRouter.put("/:id", (req, res) => {
 
 // DELETE /authors/123 => delete the author with the given id =============
 authorsRouter.delete("/:id", (req, res) => {
-    res.send("you got to the authors DELETE endpoint")
+    const authors = JSON.parse(fs.readFileSync(authorsJSONPath))
+    const remainingAuthors = authors.filter(auth => auth._id !== req.params.id)
+
+    fs.writeFileSync(authorsJSONPath, JSON.stringify(remainingAuthors))
+
+    res.status(204).send()
+   
 })
 
 export default authorsRouter
