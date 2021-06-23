@@ -94,23 +94,26 @@ postsRouter.post("/", checkBlogPostSchema, (req, res, next) => {
 postsRouter.put("/:id", (req, res, next) => {
     try {
         const posts = getPostsArray()
-    
         const post = posts.find(post => post._id === req.params.id)
-    
-        const remainingPosts = posts.filter(post => post._id !== req.params.id)
-    
-        const modifiedPost = {
-            ...post,
-            ...req.body,
-            _id: req.params.id, 
-        }
-    
-        remainingPosts.push(modifiedPost)
-    
-        writePosts(remainingPosts)
-    
-        res.send(modifiedPost)
+
+        if (post) {
+            const remainingPosts = posts.filter(post => post._id !== req.params.id)
         
+            const modifiedPost = {
+                ...post,
+                ...req.body,
+                _id: req.params.id, 
+            }
+        
+            remainingPosts.push(modifiedPost)
+        
+            writePosts(remainingPosts)
+        
+            res.send(modifiedPost)
+
+        } else {
+            next(createError(404, `Post with id ${req.params.id} not found!`))
+        }
     } catch (error) {
         next(error)
     }
@@ -120,12 +123,18 @@ postsRouter.put("/:id", (req, res, next) => {
 postsRouter.delete("/:id", (req, res, next) => {
     try {
         const posts = getPostsArray()
-        const remainingPosts = posts.filter(post => post._id !== req.params.id)
-    
-        writePosts(remainingPosts)
-    
-        res.status(204).send()
+        const post = posts.find(post => post._id === req.params.id)
+
+        if (post) {
+            const remainingPosts = posts.filter(post => post._id !== req.params.id)
         
+            writePosts(remainingPosts)
+        
+            res.status(204).send()
+            
+        } else {
+            next(createError(404, `Post with id ${req.params.id} not found!`))
+        }
     } catch (error) {
         next(error)
     }
