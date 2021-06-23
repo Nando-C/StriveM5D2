@@ -5,7 +5,8 @@ import fs from 'fs'
 import uniqid from 'uniqid'
 
 import createError from 'http-errors'
-import { postValidation } from './validation.js'
+// import { postValidation } from './validation.js'
+import { checkBlogPostSchema } from './validation.js'
 import { validationResult } from 'express-validator'
 
 
@@ -49,7 +50,7 @@ postsRouter.get("/:id", (req, res, next) => {
 })
 
 // POST /blogPosts => create a new blogpost ===================================
-postsRouter.post("/", postValidation, (req, res, next) => {
+postsRouter.post("/", checkBlogPostSchema, (req, res, next) => {
     try {
         const errors = validationResult(req)
 
