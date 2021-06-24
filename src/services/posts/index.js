@@ -73,7 +73,7 @@ postsRouter.post("/", checkBlogPostSchema, (req, res, next) => {
             //     "content": "HTML",
             //     "createdAt": "NEW DATE"
             //   }
-            const newPost = {...req.body, _id: uniqid(), createdAt: new Date()}
+            const newPost = {_id: uniqid(), ...req.body, createdAt: new Date()}
         
             const posts = getPostsArray()
         
