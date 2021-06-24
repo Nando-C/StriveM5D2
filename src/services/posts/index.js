@@ -129,6 +129,7 @@ postsRouter.delete("/:id", async(req, res, next) => {
 })
 
 // ==================== Blog Post Comments =========================
+
 // GET /blogPosts/:id/comments, get all the comments for a specific post
 postsRouter.get("/:id/comments", async (req, res, next) => {
     try {
@@ -143,6 +144,7 @@ postsRouter.get("/:id/comments", async (req, res, next) => {
         next(error)
     }
 })
+
 // POST /blogPosts/:id/comments, add a new comment to the specific post
 postsRouter.post("/:id/comments", multer().single('comment'), async(req, res, next) => {
     try {
@@ -167,7 +169,7 @@ postsRouter.post("/:id/comments", multer().single('comment'), async(req, res, ne
     }
 })
 
-// ==================== files upload ===============================
+// ==================== Files Upload ===============================
 
 // POST /blogPosts/:id/uploadCover, uploads a picture (save as idOfTheBlogPost.jpg in the public/img/blogPosts folder) for the blog post specified by the id. Store the newly created URL into the corresponding post in blogPosts.json
 postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, next) => {
