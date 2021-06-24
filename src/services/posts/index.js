@@ -132,9 +132,26 @@ postsRouter.delete("/:id", async(req, res, next) => {
 // POST /blogPosts/:id/uploadCover, uploads a picture (save as idOfTheBlogPost.jpg in the public/img/blogPosts folder) for the blog post specified by the id. Store the newly created URL into the corresponding post in blogPosts.json
 postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, next) => {
     try {
-        // console.log(req.file.buffer)
-        await writePostsImage(req.params.id, req.file.buffer)
-        res.send('Cover Image Successfully Uploaded!')
+        const posts = await getPostsArray()
+        const post = posts.find(post => post._id === req.params.id)
+
+        if (post) {
+            await writePostsImage((`${req.params.id}.jpg`), req.file.buffer)
+            
+            const remainingPosts = posts.filter(post => post._id !== req.params.id)
+        
+            const modifiedPost = {
+                _id: req.params.id, 
+                ...post,
+                cover : `http://localhost:3001/img/blogPosts/${req.params.id}.jpg`
+            }
+            remainingPosts.push(modifiedPost)
+            await writePosts(remainingPosts)
+
+            res.send(modifiedPost)
+        } else {
+            next(createError(404, `Post with id ${req.params.id} not found!`))
+        }
     } catch (error) {
         next(error)
     }
