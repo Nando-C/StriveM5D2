@@ -1,28 +1,15 @@
 import express from 'express'
-// import { fileURLToPath } from 'url'
-// import { dirname, join } from 'path'
-// import fs from 'fs'
 import uniqid from 'uniqid'
-
 import createError from 'http-errors'
 // import { postValidation } from './validation.js'
 import { checkBlogPostSchema } from './validation.js'
 import { validationResult } from 'express-validator'
+
 import { getPostsArray, writePosts, writePostsImage } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
 
 
 const postsRouter = express.Router()
-
-// const postsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "posts.json")
-
-// const getPostsArray = () => {
-//     const content = fs.readFileSync(postsJSONPath)
-//     return JSON.parse(content)
-// }
-
-// const writePosts = content => fs.writeFileSync(postsJSONPath, JSON.stringify(content))
-
 
 // GET /blogPosts => returns the list of blogposts ============================
 postsRouter.get("/", async(req, res, next) => {
@@ -145,11 +132,12 @@ postsRouter.delete("/:id", async(req, res, next) => {
 // POST /blogPosts/:id/uploadCover, uploads a picture (save as idOfTheBlogPost.jpg in the public/img/blogPosts folder) for the blog post specified by the id. Store the newly created URL into the corresponding post in blogPosts.json
 postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, next) => {
     try {
-        console.log(req.file.buffer)
+        // console.log(req.file.buffer)
         await writePostsImage(req.params.id, req.file.buffer)
-        res.send('Image Successfully Uploaded!')
+        res.send('Cover Image Successfully Uploaded!')
     } catch (error) {
         next(error)
     }
 })
+
 export default postsRouter

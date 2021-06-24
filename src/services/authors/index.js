@@ -112,4 +112,16 @@ authorsRouter.delete("/:id", async (req, res, next) => {
     }
 })
 
+// ==================== files upload ===============================
+
+// POST /authors/:id/uploadAvatar, uploads a picture (save as idOfTheAuthor.jpg in the public/img/authors folder) for the author specified by the id. Store the newly created URL into the corresponding author in authors.json
+
+authorsRouter.post("/:id/uploadAvatar", multer().single('avatar'), async (req, res, next) => {
+    try {
+        await writeAuthorsImage(req.params.id, req.file.buffer)
+        res.send('Avatar Image Successfully Uploaded!')
+    } catch (error) {
+        next(error)
+    }
+})
 export default authorsRouter
