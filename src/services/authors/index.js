@@ -1,9 +1,11 @@
 import express from "express"
 import uniqid from "uniqid"
 import createError from 'http-errors'
+import { join } from "path"
 
 import { getAuthorsArray, writeAuthors, writeAuthorsImage } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
+import { authorsPublicFolderPath } from '../../lib/fileSystemTools.js'
 
 const authorsRouter = express.Router()
 
@@ -115,11 +117,26 @@ authorsRouter.delete("/:id", async (req, res, next) => {
 // ==================== files upload ===============================
 
 // POST /authors/:id/uploadAvatar, uploads a picture (save as idOfTheAuthor.jpg in the public/img/authors folder) for the author specified by the id. Store the newly created URL into the corresponding author in authors.json
-
 authorsRouter.post("/:id/uploadAvatar", multer().single('avatar'), async (req, res, next) => {
     try {
-        await writeAuthorsImage(req.params.id, req.file.buffer)
-        res.send('Avatar Image Successfully Uploaded!')
+        const authors = await getAuthorsArray()
+        const author = authors.find(auth => auth._id === req.params.id)
+        if(author) {
+            await writeAuthorsImage((`${req.params.id}.jpg`), req.file.buffer)
+            
+            const remainingAuthors = authors.filter(auth => auth._id !== req.params.id)
+            const modifiedAuthor = {
+                _id: req.params.id, 
+                ...author,
+                avatar: `http://localhost:3001/img/authors/${req.params.id}.jpg`
+            }
+            remainingAuthors.push(modifiedAuthor)
+            await writeAuthors(remainingAuthors)
+            
+            res.status(201).send(modifiedAuthor)
+        } else {
+            next(createError(404, `Author with id ${req.params.id} not found!`))
+        }
     } catch (error) {
         next(error)
     }
