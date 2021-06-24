@@ -58,9 +58,10 @@ postsRouter.post("/", checkBlogPostSchema, async(req, res, next) => {
             //       "avatar":"AUTHOR AVATAR LINK"
             //     },
             //     "content": "HTML",
+            //     "comments": [],
             //     "createdAt": "NEW DATE"
             //   }
-            const newPost = {_id: uniqid(), ...req.body, createdAt: new Date()}
+            const newPost = {_id: uniqid(), ...req.body, comments: [], createdAt: new Date()}
         
             const posts = await getPostsArray()
         
@@ -119,6 +120,45 @@ postsRouter.delete("/:id", async(req, res, next) => {
         
             res.status(204).send()
             
+        } else {
+            next(createError(404, `Post with id ${req.params.id} not found!`))
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+
+// ==================== Blog Post Comments =========================
+// GET /blogPosts/:id/comments, get all the comments for a specific post
+postsRouter.get("/:id/comments", async (req, res, next) => {
+    try {
+        const posts = await getPostsArray()
+        const post = posts.find(post => post._id === req.params.id)
+        if(post) {
+            res.send(post.comments)
+        } else {
+            next(createError(404, `Post with id ${req.params.id} not found!`))
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+// POST /blogPosts/:id/comments, add a new comment to the specific post
+postsRouter.post("/:id/comments", multer().single('comment'), async(req, res, next) => {
+    try {
+        const posts = await getPostsArray()
+        const post = posts.find(post => post._id === req.params.id)
+        if(post) {
+            const remainingPosts = posts.filter(post => post._id !== req.params.id)
+            const modifiedPost = {
+                ...post,
+                comments : [...post.comments, req.body.comment]
+            }
+            remainingPosts.push(modifiedPost)
+            await writePosts(remainingPosts)
+            console.log(req.body.comment)
+
+            res.send(modifiedPost)
         } else {
             next(createError(404, `Post with id ${req.params.id} not found!`))
         }
