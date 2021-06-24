@@ -1,31 +1,32 @@
 import express from 'express'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
-import fs from 'fs'
+// import { fileURLToPath } from 'url'
+// import { dirname, join } from 'path'
+// import fs from 'fs'
 import uniqid from 'uniqid'
 
 import createError from 'http-errors'
 // import { postValidation } from './validation.js'
 import { checkBlogPostSchema } from './validation.js'
 import { validationResult } from 'express-validator'
+import { getPostsArray, writePosts } from '../../lib/fileSystemTools.js'
 
 
 const postsRouter = express.Router()
 
-const postsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "posts.json")
+// const postsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "posts.json")
 
-const getPostsArray = () => {
-    const content = fs.readFileSync(postsJSONPath)
-    return JSON.parse(content)
-}
+// const getPostsArray = () => {
+//     const content = fs.readFileSync(postsJSONPath)
+//     return JSON.parse(content)
+// }
 
-const writePosts = content => fs.writeFileSync(postsJSONPath, JSON.stringify(content))
+// const writePosts = content => fs.writeFileSync(postsJSONPath, JSON.stringify(content))
 
 
 // GET /blogPosts => returns the list of blogposts ============================
-postsRouter.get("/", (req, res, next) => {
+postsRouter.get("/", async(req, res, next) => {
     try {
-        const posts = getPostsArray()
+        const posts = await getPostsArray()
         res.send(posts)
         
     } catch (error) {
@@ -34,9 +35,9 @@ postsRouter.get("/", (req, res, next) => {
 })
 
 // GET /blogPosts /123 => returns a single blogpost ============================
-postsRouter.get("/:id", (req, res, next) => {
+postsRouter.get("/:id", async(req, res, next) => {
     try {
-        const posts = getPostsArray()
+        const posts = await getPostsArray()
         const post= posts.find(post => post._id === req.params.id)
         if (post) {
             res.send(post)
@@ -50,14 +51,12 @@ postsRouter.get("/:id", (req, res, next) => {
 })
 
 // POST /blogPosts => create a new blogpost ===================================
-postsRouter.post("/", checkBlogPostSchema, (req, res, next) => {
+postsRouter.post("/", checkBlogPostSchema, async(req, res, next) => {
     try {
         const errors = validationResult(req)
 
         if(errors.isEmpty()) {
-
-            // const objModel = 
-            //  {
+            // const objModel = {
             //     "_id": "SERVER GENERATED ID",
             //     "category": "ARTICLE CATEGORY",
             //     "title": "ARTICLE TITLE",
@@ -75,11 +74,11 @@ postsRouter.post("/", checkBlogPostSchema, (req, res, next) => {
             //   }
             const newPost = {_id: uniqid(), ...req.body, createdAt: new Date()}
         
-            const posts = getPostsArray()
+            const posts = await getPostsArray()
         
             posts.push(newPost)
         
-            writePosts(posts)
+            await writePosts(posts)
         
             res.status(201).send({_id: newPost._id})
         } else {
@@ -91,23 +90,23 @@ postsRouter.post("/", checkBlogPostSchema, (req, res, next) => {
 })
 
 // PUT /blogPosts /123 => edit the blogpost with the given id ==================
-postsRouter.put("/:id", (req, res, next) => {
+postsRouter.put("/:id", async(req, res, next) => {
     try {
-        const posts = getPostsArray()
+        const posts = await getPostsArray()
         const post = posts.find(post => post._id === req.params.id)
 
         if (post) {
             const remainingPosts = posts.filter(post => post._id !== req.params.id)
         
             const modifiedPost = {
+                _id: req.params.id, 
                 ...post,
                 ...req.body,
-                _id: req.params.id, 
             }
         
             remainingPosts.push(modifiedPost)
         
-            writePosts(remainingPosts)
+            await writePosts(remainingPosts)
         
             res.send(modifiedPost)
 
@@ -120,15 +119,15 @@ postsRouter.put("/:id", (req, res, next) => {
 })
 
 // DELETE /blogPosts /123 => delete the blogpost with the given id =============
-postsRouter.delete("/:id", (req, res, next) => {
+postsRouter.delete("/:id", async(req, res, next) => {
     try {
-        const posts = getPostsArray()
+        const posts = await getPostsArray()
         const post = posts.find(post => post._id === req.params.id)
 
         if (post) {
             const remainingPosts = posts.filter(post => post._id !== req.params.id)
         
-            writePosts(remainingPosts)
+            await writePosts(remainingPosts)
         
             res.status(204).send()
             
