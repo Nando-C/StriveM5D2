@@ -1,15 +1,24 @@
 import express from 'express'
 import uniqid from 'uniqid'
 import createError from 'http-errors'
-// import { postValidation } from './validation.js'
 import { checkBlogPostSchema } from './validation.js'
 import { validationResult } from 'express-validator'
+import { v2 as cloudinary } from 'cloudinary'
+import { CloudinaryStorage  } from 'multer-storage-cloudinary'
 
 import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
 import { generatePDFReadableStream } from '../../lib/pdf/index.js'
 import { pipeline } from 'stream'
 
+const cloudinaryStorage = new CloudinaryStorage({
+    cloudinary, 
+    params: {
+        folder: "posts",
+    },
+})
+
+const uploadOnCloudinary = multer({ storage: cloudinaryStorage })
 
 const postsRouter = express.Router()
 
@@ -174,20 +183,22 @@ postsRouter.post("/:id/comments", async(req, res, next) => {
 // ==================== Files Upload ===============================
 
 // POST /blogPosts/:id/uploadCover, uploads a picture (save as idOfTheBlogPost.jpg in the public/img/blogPosts folder) for the blog post specified by the id. Store the newly created URL into the corresponding post in blogPosts.json
-postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, next) => {
+postsRouter.post("/:id/uploadCover", uploadOnCloudinary.single('cover'), async(req, res, next) => {
     try {
         const posts = await getPostsArray()
         const post = posts.find(post => post._id === req.params.id)
 
         if (post) {
-            await writePostsImage((`${req.params.id}.jpg`), req.file.buffer)
+            // await writePostsImage((`${req.params.id}.jpg`), req.file.buffer)
+            
             
             const remainingPosts = posts.filter(post => post._id !== req.params.id)
         
             const modifiedPost = {
                 _id: req.params.id, 
                 ...post,
-                cover : `http://localhost:3001/img/blogPosts/${req.params.id}.jpg`
+                // cover : `http://localhost:3001/img/blogPosts/${req.params.id}.jpg`
+                cover : req.file.path
             }
             remainingPosts.push(modifiedPost)
             await writePosts(remainingPosts)
