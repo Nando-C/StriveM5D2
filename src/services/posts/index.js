@@ -202,11 +202,14 @@ postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, n
 })
 
 // =============================== PDF Stream Download =======================================
-// ================= test ===========================
-postsRouter.get("/pdf/JSONDownload", async (req, res, next) => {
+
+postsRouter.get("/:id/PDFDownload", async (req, res, next) => {
     try {
+        const posts = await getPostsArray()
+        const post = posts.find(post => post._id === req.params.id)
+        console.log(post)
         res.setHeader("Content-Disposition", "attachment; filename=posts.pdf")
-        const source = getPostsReadableStream ()
+        const source = generatePDFReadableStream(post)
         const destination = res
 
         pipeline(source, destination, err => {

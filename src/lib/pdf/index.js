@@ -1,4 +1,5 @@
 import PdfPrinter from 'pdfmake'
+import striptags from 'striptags'
 
 export const generatePDFReadableStream = data => {
     const fonts = {
@@ -13,7 +14,31 @@ export const generatePDFReadableStream = data => {
     const printer = new PdfPrinter(fonts)
 
     const docDefinition = {
-        content: ["First paragraph", "Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines"],
+        content: [
+            {
+                text: `${data.title}`,
+                style: 'header'
+            },
+            {
+                text: `by ${data.author.name}`,
+                style: 'subheader'
+            },
+            { 
+               text: striptags(`${data.content}`, [], '\n'),
+               alignment: 'center' 
+            }
+            
+        ],
+        styles: {
+            header: {
+                fontSize: 16,
+                bold: true,
+            },
+            subheader: {
+                fontSize: 12,
+			    bold: true,
+            }
+        }
     }
 
     const pdfReadableStream = printer.createPdfKitDocument(docDefinition, {})
