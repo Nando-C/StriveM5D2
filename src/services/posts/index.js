@@ -5,8 +5,10 @@ import createError from 'http-errors'
 import { checkBlogPostSchema } from './validation.js'
 import { validationResult } from 'express-validator'
 
-import { getPostsArray, writePosts, writePostsImage } from '../../lib/fileSystemTools.js'
+import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
+import { generatePDFReadableStream } from '../../lib/pdf/index.js'
+import { pipeline } from 'stream'
 
 
 const postsRouter = express.Router()
@@ -195,6 +197,23 @@ postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, n
             next(createError(404, `Post with id ${req.params.id} not found!`))
         }
     } catch (error) {
+        next(error)
+    }
+})
+
+// =============================== PDF Stream Download =======================================
+// ================= test ===========================
+postsRouter.get("/pdf/JSONDownload", async (req, res, next) => {
+    try {
+        res.setHeader("Content-Disposition", "attachment; filename=posts.pdf")
+        const source = getPostsReadableStream ()
+        const destination = res
+
+        pipeline(source, destination, err => {
+            if (err) next(err)
+        })
+    } catch (error) {
+        console.log(error)
         next(error)
     }
 })
