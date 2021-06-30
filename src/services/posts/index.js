@@ -146,7 +146,7 @@ postsRouter.get("/:id/comments", async (req, res, next) => {
 })
 
 // POST /blogPosts/:id/comments, add a new comment to the specific post
-postsRouter.post("/:id/comments", multer().single('comment'), async(req, res, next) => {
+postsRouter.post("/:id/comments", async(req, res, next) => {
     try {
         const posts = await getPostsArray()
         const post = posts.find(post => post._id === req.params.id)
@@ -154,11 +154,11 @@ postsRouter.post("/:id/comments", multer().single('comment'), async(req, res, ne
             const remainingPosts = posts.filter(post => post._id !== req.params.id)
             const modifiedPost = {
                 ...post,
-                comments : [...post.comments, req.body.comment]
+                comments : [...post.comments, req.body]
             }
             remainingPosts.push(modifiedPost)
             await writePosts(remainingPosts)
-            console.log(req.body.comment)
+            console.log(req.body)
 
             res.send(modifiedPost)
         } else {

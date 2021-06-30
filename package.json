@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/server.js",
+    "dev": "nodemon -e .js ./src/server.js",
     "start": "node ./src/server.js"
   },
   "repository": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/Nando-C/StriveM5D2#readme",
   "dependencies": {
+    "bootstrap": "^4.6.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-list-endpoints": "^5.0.0",
@@ -28,6 +29,7 @@
     "fs-extra": "^10.0.0",
     "http-errors": "^1.8.0",
     "multer": "^1.4.2",
+    "react-bootstrap": "^1.6.1",
     "uniqid": "^5.3.0"
   },
   "devDependencies": {
