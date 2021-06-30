@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/Nando-C/StriveM5D2#readme",
   "dependencies": {
+    "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "cloudinary": "^1.26.1",
     "cors": "^2.8.5",

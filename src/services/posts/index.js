@@ -225,7 +225,7 @@ postsRouter.get("/:id/PDFDownload", async (req, res, next) => {
         const post = posts.find(post => post._id === req.params.id)
         console.log(post)
         res.setHeader("Content-Disposition", "attachment; filename=posts.pdf")
-        const source = generatePDFReadableStream(post)
+        const source = await generatePDFReadableStream(post)
         const destination = res
 
         pipeline(source, destination, err => {
