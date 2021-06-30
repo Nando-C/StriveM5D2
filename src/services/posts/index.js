@@ -6,19 +6,19 @@ import { validationResult } from 'express-validator'
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage  } from 'multer-storage-cloudinary'
 
-import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream } from '../../lib/fileSystemTools.js'
+import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream, getAuthorsArray } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
 import { generatePDFReadableStream } from '../../lib/pdf/index.js'
 import { pipeline } from 'stream'
 
-const cloudinaryStorage = new CloudinaryStorage({
+const blogCoverStorage = new CloudinaryStorage({
     cloudinary, 
     params: {
         folder: "posts",
     },
 })
 
-const uploadOnCloudinary = multer({ storage: cloudinaryStorage })
+const uploadOnCloudinary = multer({ storage: blogCoverStorage })
 
 const postsRouter = express.Router()
 
@@ -72,15 +72,20 @@ postsRouter.post("/", checkBlogPostSchema, async(req, res, next) => {
             //     "comments": [],
             //     "createdAt": "NEW DATE"
             //   }
-            const newPost = {_id: uniqid(), ...req.body, comments: [], createdAt: new Date()}
-        
+            
             const posts = await getPostsArray()
-        
-            posts.push(newPost)
-        
-            await writePosts(posts)
-        
-            res.status(201).send({_id: newPost._id})
+            // const authors = await getAuthorsArray()
+            // const author = authors.find(auth => auth.name === req.params.author.name)
+            
+            // if(author) {
+                const newPost = {_id: uniqid(), ...req.body, comments: [], createdAt: new Date()}
+                posts.push(newPost)
+            
+                await writePosts(posts)
+            
+                res.status(201).send({_id: newPost._id})
+
+            // }
         } else {
             next(createError(400, { errorsList: errors }))
         }

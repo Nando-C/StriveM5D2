@@ -7,6 +7,18 @@ import { getAuthorsArray, writeAuthors, writeAuthorsImage } from '../../lib/file
 import multer from 'multer'
 import { authorsPublicFolderPath } from '../../lib/fileSystemTools.js'
 
+import { v2 as cloudinary } from 'cloudinary'
+import { CloudinaryStorage  } from 'multer-storage-cloudinary'
+
+const authorAvatarStorage = new CloudinaryStorage({
+    cloudinary, 
+    params: {
+        folder: "authors",
+    },
+})
+
+const uploadOnCloudinary = multer({ storage: authorAvatarStorage })
+
 const authorsRouter = express.Router()
 
 // GET /authors => returns the list of authors ============================
@@ -74,13 +86,13 @@ authorsRouter.put("/:id", async (req, res, next) => {
             _id: req.params.id, 
             ...author,
             ...req.body,
-            avatar: (req.body.name && req.body.surname) 
-            ? `https://ui-avatars.com/api/?name=${req.body.name}+${req.body.surname}` 
-            :  req.body.name 
-                ? `https://ui-avatars.com/api/?name=${req.body.name}+${author.surname}`
-                : req.body.surname
-                    ? `https://ui-avatars.com/api/?name=${author.name}+${req.body.surname}`
-                    : `https://ui-avatars.com/api/?name=${author.name}+${author.surname}`
+            // avatar: (req.body.name && req.body.surname) 
+            // ? `https://ui-avatars.com/api/?name=${req.body.name}+${req.body.surname}` 
+            // :  req.body.name 
+            //     ? `https://ui-avatars.com/api/?name=${req.body.name}+${author.surname}`
+            //     : req.body.surname
+            //         ? `https://ui-avatars.com/api/?name=${author.name}+${req.body.surname}`
+            //         : `https://ui-avatars.com/api/?name=${author.name}+${author.surname}`
         }
     
         remainingAuthors.push(modifiedAuthor)
@@ -117,18 +129,20 @@ authorsRouter.delete("/:id", async (req, res, next) => {
 // ==================== files upload ===============================
 
 // POST /authors/:id/uploadAvatar, uploads a picture (save as idOfTheAuthor.jpg in the public/img/authors folder) for the author specified by the id. Store the newly created URL into the corresponding author in authors.json
-authorsRouter.post("/:id/uploadAvatar", multer().single('avatar'), async (req, res, next) => {
+authorsRouter.post("/:id/uploadAvatar", uploadOnCloudinary.single('avatar'), async (req, res, next) => {
     try {
         const authors = await getAuthorsArray()
         const author = authors.find(auth => auth._id === req.params.id)
+
         if(author) {
-            await writeAuthorsImage((`${req.params.id}.jpg`), req.file.buffer)
+            // await writeAuthorsImage((`${req.params.id}.jpg`), req.file.buffer)
             
             const remainingAuthors = authors.filter(auth => auth._id !== req.params.id)
             const modifiedAuthor = {
                 _id: req.params.id, 
                 ...author,
-                avatar: `http://localhost:3001/img/authors/${req.params.id}.jpg`
+                // avatar: `http://localhost:3001/img/authors/${req.params.id}.jpg`
+                avatar: req.file.path
             }
             remainingAuthors.push(modifiedAuthor)
             await writeAuthors(remainingAuthors)
