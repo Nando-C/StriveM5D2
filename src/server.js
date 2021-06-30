@@ -9,7 +9,7 @@ import { badRequestMiddleware, notFoundMiddleware, catchErrorMiddleware } from "
 import { getCurrentFolderPath } from "./lib/fileSystemTools.js"
 
 const server = express()
-const port = 3001
+const port = process.env.PORT || 3001
 const publicFolderPath = join(getCurrentFolderPath(import.meta.url), "../public")
 // ==================  MIDDLEWARES =============================
 server.use(express.static(publicFolderPath))
@@ -33,5 +33,5 @@ server.use(catchErrorMiddleware)
 console.table(listEndpoints(server))
 
 server.listen(port, () => {
-    console.log("Server is running on port: " + port)
+    console.log(" ✅  Server is running on port: " + port)
 })
