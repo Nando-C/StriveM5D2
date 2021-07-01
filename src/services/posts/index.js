@@ -6,10 +6,13 @@ import { validationResult } from 'express-validator'
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage  } from 'multer-storage-cloudinary'
 
-import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream, getAuthorsArray } from '../../lib/fileSystemTools.js'
+import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
 import { generatePDFReadableStream } from '../../lib/pdf/index.js'
 import { pipeline } from 'stream'
+
+import { sendEmail } from '../../lib/email/index.js'
+
 
 const blogCoverStorage = new CloudinaryStorage({
     cloudinary, 
@@ -82,6 +85,7 @@ postsRouter.post("/", checkBlogPostSchema, async(req, res, next) => {
                 posts.push(newPost)
             
                 await writePosts(posts)
+                await sendEmail(process.env.SENDER_EMAIL)
             
                 res.status(201).send({_id: newPost._id})
 
@@ -236,5 +240,7 @@ postsRouter.get("/:id/PDFDownload", async (req, res, next) => {
         next(error)
     }
 })
+
+
 
 export default postsRouter
