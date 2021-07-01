@@ -3,12 +3,15 @@ import uniqid from "uniqid"
 import createError from 'http-errors'
 import { join } from "path"
 
-import { getAuthorsArray, writeAuthors, writeAuthorsImage } from '../../lib/fileSystemTools.js'
+import { getAuthorsArray, writeAuthors, writeAuthorsImage, getAuthorsReadableStream } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
 import { authorsPublicFolderPath } from '../../lib/fileSystemTools.js'
 
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage  } from 'multer-storage-cloudinary'
+
+import { Transform } from "json2csv"
+import { pipeline } from "stream"
 
 const authorAvatarStorage = new CloudinaryStorage({
     cloudinary, 
@@ -155,4 +158,21 @@ authorsRouter.post("/:id/uploadAvatar", uploadOnCloudinary.single('avatar'), asy
         next(error)
     }
 })
+
+// ============================== CVS Download =================================
+
+authorsRouter.get("/Download/CSV" , async (req, res, next) => {
+    const source = getAuthorsReadableStream()
+    const fields = ["_id", "name", "surname", "dateOfBirth", "email"]
+    const options = { fields }
+    const transform = new Transform(options)
+
+    res.setHeader("Content-Disposition", "attachement; filename=Authors_List.csv")
+    const destination = res
+
+    pipeline(source, transform, destination, err => {
+        if(err) next(err)
+    })
+})
+
 export default authorsRouter

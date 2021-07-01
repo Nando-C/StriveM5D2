@@ -22,3 +22,4 @@ export const writePostsImage = (fileName, content) => writeFile(join(blogPostsPu
 export const writeAuthorsImage = (fileName, content) => writeFile(join(authorsPublicFolderPath, fileName), content)
 
 export const getPostsReadableStream = () => createReadStream(postsJSONPath)
+export const getAuthorsReadableStream = () => createReadStream(authorsJSONPath)
