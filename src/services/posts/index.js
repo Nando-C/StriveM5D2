@@ -1,13 +1,24 @@
 import express from 'express'
 import uniqid from 'uniqid'
 import createError from 'http-errors'
-// import { postValidation } from './validation.js'
 import { checkBlogPostSchema } from './validation.js'
 import { validationResult } from 'express-validator'
+import { v2 as cloudinary } from 'cloudinary'
+import { CloudinaryStorage  } from 'multer-storage-cloudinary'
 
-import { getPostsArray, writePosts, writePostsImage } from '../../lib/fileSystemTools.js'
+import { getPostsArray, writePosts, writePostsImage, getPostsReadableStream, getAuthorsArray } from '../../lib/fileSystemTools.js'
 import multer from 'multer'
+import { generatePDFReadableStream } from '../../lib/pdf/index.js'
+import { pipeline } from 'stream'
 
+const blogCoverStorage = new CloudinaryStorage({
+    cloudinary, 
+    params: {
+        folder: "posts",
+    },
+})
+
+const uploadOnCloudinary = multer({ storage: blogCoverStorage })
 
 const postsRouter = express.Router()
 
@@ -61,15 +72,20 @@ postsRouter.post("/", checkBlogPostSchema, async(req, res, next) => {
             //     "comments": [],
             //     "createdAt": "NEW DATE"
             //   }
-            const newPost = {_id: uniqid(), ...req.body, comments: [], createdAt: new Date()}
-        
+            
             const posts = await getPostsArray()
-        
-            posts.push(newPost)
-        
-            await writePosts(posts)
-        
-            res.status(201).send({_id: newPost._id})
+            // const authors = await getAuthorsArray()
+            // const author = authors.find(auth => auth.name === req.params.author.name)
+            
+            // if(author) {
+                const newPost = {_id: uniqid(), ...req.body, comments: [], createdAt: new Date()}
+                posts.push(newPost)
+            
+                await writePosts(posts)
+            
+                res.status(201).send({_id: newPost._id})
+
+            // }
         } else {
             next(createError(400, { errorsList: errors }))
         }
@@ -172,20 +188,22 @@ postsRouter.post("/:id/comments", async(req, res, next) => {
 // ==================== Files Upload ===============================
 
 // POST /blogPosts/:id/uploadCover, uploads a picture (save as idOfTheBlogPost.jpg in the public/img/blogPosts folder) for the blog post specified by the id. Store the newly created URL into the corresponding post in blogPosts.json
-postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, next) => {
+postsRouter.post("/:id/uploadCover", uploadOnCloudinary.single('cover'), async(req, res, next) => {
     try {
         const posts = await getPostsArray()
         const post = posts.find(post => post._id === req.params.id)
 
         if (post) {
-            await writePostsImage((`${req.params.id}.jpg`), req.file.buffer)
+            // await writePostsImage((`${req.params.id}.jpg`), req.file.buffer)
+            
             
             const remainingPosts = posts.filter(post => post._id !== req.params.id)
         
             const modifiedPost = {
                 _id: req.params.id, 
                 ...post,
-                cover : `http://localhost:3001/img/blogPosts/${req.params.id}.jpg`
+                // cover : `http://localhost:3001/img/blogPosts/${req.params.id}.jpg`
+                cover : req.file.path
             }
             remainingPosts.push(modifiedPost)
             await writePosts(remainingPosts)
@@ -195,6 +213,26 @@ postsRouter.post("/:id/uploadCover", multer().single('cover'), async(req, res, n
             next(createError(404, `Post with id ${req.params.id} not found!`))
         }
     } catch (error) {
+        next(error)
+    }
+})
+
+// =============================== PDF Stream Download =======================================
+
+postsRouter.get("/:id/PDFDownload", async (req, res, next) => {
+    try {
+        const posts = await getPostsArray()
+        const post = posts.find(post => post._id === req.params.id)
+        console.log(post)
+        res.setHeader("Content-Disposition", "attachment; filename=posts.pdf")
+        const source = await generatePDFReadableStream(post)
+        const destination = res
+
+        pipeline(source, destination, err => {
+            if (err) next(err)
+        })
+    } catch (error) {
+        console.log(error)
         next(error)
     }
 })
